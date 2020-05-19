@@ -6,12 +6,17 @@ import Data.Text
 import Data.Time.Clock
 import Data.Time.Format
 import Text.Pretty.Simple
+import Text.Read
 
 main :: IO ()
-main = pPrint example
+main = do
+    example <- readFile "example"
+    pPrint (read example :: [Entry])
 
 instance Read NominalDiffTime where
-    readsPrec _ = readSTime False defaultTimeLocale "%h:%m"
+    readPrec = do
+        String s <- lexP
+        parseTimeM False defaultTimeLocale "%h:%m" s
 
 data Entry = Entry
     { description :: Text
@@ -21,19 +26,3 @@ data Entry = Entry
     } deriving (Show, Read)
 
 data Ticket = Issue | PullRequest deriving (Show, Read)
-
-example :: [Entry]
-example =
-    [ Entry
-        { description = "Planting"
-        , tickets = [Issue, PullRequest]
-        , time = 6300
-        , isDone = True
-        }
-    , Entry
-        { description = "Gathering"
-        , tickets = [Issue, Issue]
-        , time = 7500
-        , isDone = True
-        }
-    ]

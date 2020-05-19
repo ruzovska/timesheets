@@ -1,0 +1,13 @@
+[ Entry
+    { description = "Planting"
+    , tickets = [Issue, PullRequest]
+    , time = "1:20"
+    , isDone = True
+    }
+, Entry
+    { description = "Gathering"
+    , tickets = [Issue, Issue]
+    , time = "0:44"
+    , isDone = True
+    }
+]
