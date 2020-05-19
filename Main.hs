@@ -1,10 +1,12 @@
 {-#language OverloadedStrings#-}
+{-#language RecordWildCards#-}
 
 module Main where
 
 import Text.LaTeX
 import Data.Text (Text)
 import qualified Data.Text.IO as Text
+import qualified Data.Text as Text
 import Data.Time.Clock
 import Data.Time.Format
 import Text.Pretty.Simple
@@ -21,7 +23,10 @@ main = do
 instance Read NominalDiffTime where
     readPrec = do
         String s <- lexP
-        parseTimeM False defaultTimeLocale "%h:%m" s
+        parseTimeM False defaultTimeLocale "%h:%M" s
+
+instance Texy NominalDiffTime where
+    texy = texy . Text.pack . formatTime defaultTimeLocale "%h:%M"
 
 data Entry = Entry
     { description :: Text
@@ -34,4 +39,7 @@ data Ticket = Issue | PullRequest deriving (Show, Read)
 
 entriesToTable :: [Entry] -> LaTeXM ()
 entriesToTable xs = tabular Nothing [LeftColumn, LeftColumn] $ do
-    tex & tex
+    sequence_ $ fmap entryToRow xs
+
+entryToRow :: Entry -> LaTeXM ()
+entryToRow Entry {..} = texy description & texy time >> lnbk
