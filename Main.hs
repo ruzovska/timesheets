@@ -4,6 +4,7 @@
 module Main where
 
 import Text.LaTeX
+import Text.LaTeX.Packages.TabularX
 import Data.Text (Text)
 import qualified Data.Text.IO as Text
 import qualified Data.Text as Text
@@ -18,6 +19,7 @@ main = do
     let entries = read example :: [Entry]
     Text.putStrLn $ (render :: LaTeX -> Text) $ execLaTeXM $ do
         documentclass [] article
+        usepackage [] tabularxp
         document $ entriesToTable entries
 
 instance Read NominalDiffTime where
@@ -38,7 +40,7 @@ data Entry = Entry
 data Ticket = Issue | PullRequest deriving (Show, Read)
 
 entriesToTable :: [Entry] -> LaTeXM ()
-entriesToTable xs = tabular Nothing [LeftColumn, LeftColumn] $ do
+entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", LeftColumn] $ do
     sequence_ $ fmap entryToRow xs
 
 entryToRow :: Entry -> LaTeXM ()
