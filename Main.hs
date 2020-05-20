@@ -22,13 +22,15 @@ main = do
         usepackage [] tabularxp
         document $ entriesToTable entries
 
+defaultTimeFormat = "%h:%0M"
+
 instance Read NominalDiffTime where
     readPrec = do
         String s <- lexP
-        parseTimeM False defaultTimeLocale "%h:%M" s
+        parseTimeM False defaultTimeLocale defaultTimeFormat s
 
 instance Texy NominalDiffTime where
-    texy = texy . Text.pack . formatTime defaultTimeLocale "%h:%M"
+    texy = texy . Text.pack . formatTime defaultTimeLocale defaultTimeFormat
 
 data Entry = Entry
     { description :: Text
@@ -42,12 +44,14 @@ data Ticket = Issue | PullRequest deriving (Show, Read)
 instance Texy Ticket where texy _ = "Not implemented."
 
 entriesToTable :: [Entry] -> LaTeXM ()
-entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", LeftColumn, LeftColumn, LeftColumn] $ do
+entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", LeftColumn, RightColumn] $ do
     hline
-    "meow" & "kusau" & "kotau" & "putasau" >> lnbk
+    "Description" & "See also" & "Time" >> lnbk
     hline
     sequence_ $ fmap entryToRow xs
     hline
+    "Total" & "" & texy (sum (fmap time xs)) >> lnbk
+    hline
 
 entryToRow :: Entry -> LaTeXM ()
-entryToRow Entry {..} = texy description & texy isDone & texy time >> lnbk
+entryToRow Entry {..} = texy description & "" & texy time >> lnbk
