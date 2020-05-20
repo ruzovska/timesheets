@@ -39,9 +39,15 @@ data Entry = Entry
 
 data Ticket = Issue | PullRequest deriving (Show, Read)
 
+instance Texy Ticket where texy _ = "Not implemented."
+
 entriesToTable :: [Entry] -> LaTeXM ()
-entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", LeftColumn] $ do
+entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", LeftColumn, LeftColumn, LeftColumn] $ do
+    hline
+    "meow" & "kusau" & "kotau" & "putasau" >> lnbk
+    hline
     sequence_ $ fmap entryToRow xs
+    hline
 
 entryToRow :: Entry -> LaTeXM ()
-entryToRow Entry {..} = texy description & texy time >> lnbk
+entryToRow Entry {..} = texy description & texy isDone & texy time >> lnbk
