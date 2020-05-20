@@ -73,14 +73,14 @@ makeHeader start end = do
         lnbkspc (Ex 2)
 
 entriesToTable :: [Entry] -> LaTeXM ()
-entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", NameColumn "X", RightColumn] $ do
+entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", CenterColumn, NameColumn "X", NameColumn "X", RightColumn] $ do
     hline
-    "Description" & "See also" & "Time" >> lnbk
+    "Description" & "Status" & "" & "See also" & "Time" >> lnbk
     hline
     sequence_ $ fmap entryToRow xs
     hline
-    "Total" & "" & texy (sum (fmap time xs)) >> lnbk
+    "Total" & "" & "" & "" & texy (sum (fmap time xs)) >> lnbk
     hline
 
 entryToRow :: Entry -> LaTeXM ()
-entryToRow Entry {..} = texy description & sequence_ (List.intersperse " " (fmap texy tickets)) & texy time >> lnbk
+entryToRow Entry {..} = texy description & (if isDone then "completed" else "") & "" & sequence_ (List.intersperse " " (fmap texy tickets)) & texy time >> lnbk
