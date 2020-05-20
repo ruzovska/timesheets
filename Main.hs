@@ -9,6 +9,7 @@ import Data.Text (Text)
 import qualified Data.Text.IO as Text
 import qualified Data.Text as Text
 import Data.Time.Clock
+import Data.Time.Calendar
 import Data.Time.Format
 import Text.Pretty.Simple
 import Text.Read
@@ -16,11 +17,13 @@ import Text.Read
 main :: IO ()
 main = do
     example <- getContents
-    let entries = read example :: [Entry]
+    let Log {..} = read example :: Log
     Text.putStrLn $ (render :: LaTeX -> Text) $ execLaTeXM $ do
         documentclass [] article
         usepackage [] tabularxp
-        document $ entriesToTable entries
+        document $ do
+            makeHeader start end
+            entriesToTable entries
 
 defaultTimeFormat = "%h:%0M"
 
@@ -32,6 +35,16 @@ instance Read NominalDiffTime where
 instance Texy NominalDiffTime where
     texy = texy . Text.pack . formatTime defaultTimeLocale defaultTimeFormat
 
+defaultDayFormat = "%d of %B %Y"
+
+instance Texy Day where
+    texy = texy . Text.pack . formatTime defaultTimeLocale defaultDayFormat
+
+data Log = Log
+    { start, end :: Day
+    , entries :: [Entry]
+    } deriving (Show, Read)
+
 data Entry = Entry
     { description :: Text
     , tickets :: [Ticket]
@@ -42,6 +55,15 @@ data Entry = Entry
 data Ticket = Issue | PullRequest deriving (Show, Read)
 
 instance Texy Ticket where texy _ = "Not implemented."
+
+makeHeader :: Day -> Day -> LaTeXM ()
+makeHeader start end = do
+    textbf $ do
+        "Time Sheet for "
+        texy start
+        "---"
+        texy end
+        lnbkspc (Ex 2)
 
 entriesToTable :: [Entry] -> LaTeXM ()
 entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", LeftColumn, RightColumn] $ do
