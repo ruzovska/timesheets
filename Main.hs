@@ -4,7 +4,9 @@
 module Main where
 
 import Text.LaTeX
+import Text.LaTeX.Packages.Hyperref
 import Text.LaTeX.Packages.TabularX
+import qualified Data.List as List
 import Data.Text (Text)
 import qualified Data.Text.IO as Text
 import qualified Data.Text as Text
@@ -20,6 +22,7 @@ main = do
     let Log {..} = read example :: Log
     Text.putStrLn $ (render :: LaTeX -> Text) $ execLaTeXM $ do
         documentclass [] article
+        usepackage [] hyperref
         usepackage [] tabularxp
         document $ do
             makeHeader start end
@@ -52,9 +55,13 @@ data Entry = Entry
     , isDone :: Bool
     } deriving (Show, Read)
 
-data Ticket = Issue | PullRequest deriving (Show, Read)
+data Ticket = Issue String Int | PullRequest String Int deriving (Show, Read)
 
-instance Texy Ticket where texy _ = "Not implemented."
+instance Texy Ticket where
+    texy (Issue repository n) =
+        href [] (createURL ("https://github.com/" <> repository <> "/issues/" <> show n)) ("#" <> texy n)
+    texy (PullRequest repository n) =
+        href [] (createURL ("https://github.com/" <> repository <> "/pull/" <> show n)) ("#" <> texy n)
 
 makeHeader :: Day -> Day -> LaTeXM ()
 makeHeader start end = do
@@ -76,4 +83,4 @@ entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", 
     hline
 
 entryToRow :: Entry -> LaTeXM ()
-entryToRow Entry {..} = texy description & "" & texy time >> lnbk
+entryToRow Entry {..} = texy description & sequence_ (List.intersperse " " (fmap texy tickets)) & texy time >> lnbk

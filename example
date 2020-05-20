@@ -4,13 +4,19 @@ Log
     , entries =
         [ Entry
             { description = "Planting"
-            , tickets = [Issue, PullRequest]
+            , tickets =
+                [ PullRequest "githubtraining/hellogitworld" 1
+                , PullRequest "githubtraining/hellogitworld" 2
+                ]
             , time = "1:20"
             , isDone = True
             }
         , Entry
             { description = "Gathering"
-            , tickets = [Issue, Issue]
+            , tickets =
+                [ Issue "githubtraining/hellogitworld" 132
+                , Issue "githubtraining/hellogitworld" 140
+                ]
             , time = "0:44"
             , isDone = True
             }
