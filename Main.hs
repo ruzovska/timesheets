@@ -22,7 +22,7 @@ main = do
     let Log {..} = read example :: Log
     Text.putStrLn $ (render :: LaTeX -> Text) $ execLaTeXM $ do
         documentclass [] article
-        usepackage [] hyperref
+        usepackage ["colorlinks=true"] hyperref
         usepackage [] tabularxp
         document $ do
             makeHeader start end
@@ -73,7 +73,7 @@ makeHeader start end = do
         lnbkspc (Ex 2)
 
 entriesToTable :: [Entry] -> LaTeXM ()
-entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", LeftColumn, RightColumn] $ do
+entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", NameColumn "X", RightColumn] $ do
     hline
     "Description" & "See also" & "Time" >> lnbk
     hline
