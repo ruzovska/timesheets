@@ -30,11 +30,6 @@ main = do
 
 defaultTimeFormat = "%h:%0M"
 
-instance Read NominalDiffTime where
-    readPrec = do
-        String s <- lexP
-        parseTimeM False defaultTimeLocale defaultTimeFormat s
-
 instance Texy NominalDiffTime where
     texy = texy . Text.pack . formatTime defaultTimeLocale defaultTimeFormat
 
