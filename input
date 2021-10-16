@@ -1,0 +1,33 @@
+[
+    Period
+        { start = (2014-07-22)
+        , end = (2017-11-29)
+        , tasks =
+            [ Task
+                { description = "Planting"
+                , tickets =
+                    [ PullRequest "githubtraining/hellogitworld" 1
+                    , PullRequest "githubtraining/hellogitworld" 2
+                    ]
+                , time = 3600s
+                , isDone = True
+                }
+            , Task
+                { description = "Gathering"
+                , tickets =
+                    [ Issue "githubtraining/hellogitworld" 132
+                    , Issue "githubtraining/hellogitworld" 140
+                    ]
+                , time = 7200s
+                , isDone = True
+                }
+            ]
+        , services =
+            [ Service
+                { weight = 20
+                , name = "Software development services"
+                , price = 10
+                }
+            ]
+        }
+]

@@ -18,15 +18,15 @@ import Text.Read
 
 main :: IO ()
 main = do
-    example <- getContents
-    let Log {..} = read example :: Log
+    input <- getContents
+    let periods = read input :: [Period]
     Text.putStrLn $ (render :: LaTeX -> Text) $ execLaTeXM $ do
         documentclass [] article
         usepackage ["colorlinks=true"] hyperref
         usepackage [] tabularxp
+        usepackage ["left=2cm, right=2cm, top=2cm"] "geometry"
         document $ do
-            makeHeader start end
-            entriesToTable entries
+            (sequence_ . fmap periodToTable) periods
 
 defaultTimeFormat = "%h:%0M"
 
@@ -38,16 +38,23 @@ defaultDayFormat = "%d of %B %Y"
 instance Texy Day where
     texy = texy . Text.pack . formatTime defaultTimeLocale defaultDayFormat
 
-data Log = Log
+data Period = Period
     { start, end :: Day
-    , entries :: [Entry]
+    , tasks :: [Task]
+    , services :: [Service]
     } deriving (Show, Read)
 
-data Entry = Entry
+data Task = Task
     { description :: Text
     , tickets :: [Ticket]
     , time :: NominalDiffTime
     , isDone :: Bool
+    } deriving (Show, Read)
+
+data Service = Service
+    { weight :: Double
+    , name :: Text
+    , price :: Double
     } deriving (Show, Read)
 
 data Ticket = Issue String Int | PullRequest String Int deriving (Show, Read)
@@ -60,22 +67,25 @@ instance Texy Ticket where
 
 makeHeader :: Day -> Day -> LaTeXM ()
 makeHeader start end = do
-    textbf $ do
+    (textbf . center) $ do
         "Time Sheet for "
         texy start
         "---"
         texy end
         lnbkspc (Ex 2)
 
-entriesToTable :: [Entry] -> LaTeXM ()
-entriesToTable xs = tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", CenterColumn, NameColumn "X", NameColumn "X", RightColumn] $ do
-    hline
-    "Description" & "Status" & "See also" & "" & "Time" >> lnbk
-    hline
-    sequence_ $ fmap entryToRow xs
-    hline
-    "Total" & "" & "" & "" & texy (sum (fmap time xs)) >> lnbk
-    hline
+periodToTable :: Period -> LaTeXM ()
+periodToTable Period {..} = do
+    makeHeader start end
+    tabularx (CustomMeasure textwidth) Nothing [NameColumn "X", CenterColumn, NameColumn "X", RightColumn] $ do
+        hline
+        "Description" & "Status" & "See also" & "Time" >> lnbk
+        hline
+        sequence_ $ fmap taskToRow tasks
+        "Total" & "" & "" & texy (sum (fmap time tasks)) >> lnbk
+        hline >> lnbkspc (Ex 2)
 
-entryToRow :: Entry -> LaTeXM ()
-entryToRow Entry {..} = texy description & (if isDone then "completed" else "") & sequence_ (List.intersperse newline (fmap (mbox . texy) tickets)) & "" & texy time >> lnbk
+taskToRow :: Task -> LaTeXM ()
+taskToRow Task {..} = do
+    texy description & (if isDone then "completed" else "") & sequence_ (List.intersperse newline (fmap (mbox . texy) tickets)) & texy time >> lnbk
+    hline
