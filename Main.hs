@@ -13,20 +13,25 @@ import qualified Data.Text as Text
 import Data.Time.Clock
 import Data.Time.Calendar
 import Data.Time.Format
+import System.Environment
 import Text.Pretty.Simple
 import Text.Read
 
 main :: IO ()
 main = do
-    input <- getContents
-    let periods = read input :: [Period]
-    Text.putStrLn $ (render :: LaTeX -> Text) $ execLaTeXM $ do
-        documentclass [] article
-        usepackage ["colorlinks=true"] hyperref
-        usepackage [] tabularxp
-        usepackage ["left=2cm, right=2cm, top=2cm"] "geometry"
-        document $ do
-            (sequence_ . fmap periodToTable) periods
+    arguments <- getArgs
+    if length arguments == 0
+        then print "No arguments provided!"
+        else do input <- readFile (arguments !! 0)
+                let timesheetsFilePath = arguments !! 1
+                let periods = read input :: [Period]
+                writeFile timesheetsFilePath $ Text.unpack $ (render :: LaTeX -> Text) $ execLaTeXM $ do
+                    documentclass [] article
+                    usepackage ["colorlinks=true"] hyperref
+                    usepackage [] tabularxp
+                    usepackage ["left=2cm, right=2cm, top=2cm"] "geometry"
+                    document $ do
+                        (sequence_ . fmap periodToTable) periods
 
 defaultTimeFormat = "%h:%0M"
 

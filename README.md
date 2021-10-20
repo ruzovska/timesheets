@@ -15,7 +15,7 @@ How to use this program
 1. Edit the `input` file to your liking but keep the structure intact.
 1. Run the program:
 
-       cabal -v0 run timesheets < input > output.tex
+       cabal run timesheets -- input output.tex
 1. A file named `output.tex` appeared in the directory. Convert it to `pdf` format using some conversion tool. I use `xelatex`:
 
        xelatex output.tex output.pdf
